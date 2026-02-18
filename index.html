@@ -8,92 +8,120 @@
         :root {
             --apple-blue: #007aff;
             --apple-red: #ff3b30;
-            --glass: rgba(255, 255, 255, 0.94);
+            --glass: rgba(255, 255, 255, 0.96);
         }
-        /* Убираем все лишнее для мгновенного отображения */
+        
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; user-select: none; }
         
         body, html { 
             height: 100%; width: 100%; 
-            background-color: #fff; 
+            background-color: #000; 
             font-family: -apple-system, system-ui, sans-serif; 
             overflow: hidden; 
         }
 
-        /* Область контента */
+        /* Оболочка iframe с плавным появлением */
         #web-wrapper { 
             position: absolute; 
-            top: 0; left: 0; right: 0; 
-            bottom: 65px; 
-            overflow: hidden;
+            top: 0; left: 0; right: 0; bottom: 0; 
             background: #fff;
+            transition: transform 0.6s cubic-bezier(0.32, 0.72, 0, 1);
         }
 
         iframe { width: 100%; height: 100%; border: none; display: block; }
 
-        /* Нижнее меню iOS Style */
+        /* Эффект затемнения основного контента при открытии меню */
+        body.menu-open #web-wrapper {
+            transform: scale(0.96);
+            border-radius: 20px;
+            opacity: 0.8;
+        }
+
+        /* Нижнее меню iOS Pro Style */
         #ios-menu {
             position: fixed; bottom: 0; left: 0; right: 0;
             background: var(--glass); 
-            backdrop-filter: blur(20px) saturate(180%); 
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border-top: 1px solid rgba(0,0,0,0.08); 
+            backdrop-filter: blur(30px) saturate(200%); 
+            -webkit-backdrop-filter: blur(30px) saturate(200%);
+            border-top: 1px solid rgba(0,0,0,0.05); 
             z-index: 9999;
-            transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+            /* Плавная пружинная анимация */
+            transition: all 0.6s cubic-bezier(0.32, 0.72, 0, 1);
             padding-bottom: env(safe-area-inset-bottom);
-            border-radius: 25px 25px 0 0;
+            border-radius: 30px 30px 0 0;
+            transform: translateY(calc(100% - 75px));
+        }
+
+        #ios-menu.open {
+            transform: translateY(0);
         }
 
         .handle-container { 
-            padding: 14px; 
+            padding: 18px; 
             display: flex; 
             flex-direction: column; 
             align-items: center; 
             cursor: pointer; 
         }
 
-        .handle { width: 36px; height: 5px; background: rgba(0,0,0,0.1); border-radius: 10px; margin-bottom: 6px; }
+        .handle { 
+            width: 36px; height: 5px; 
+            background: rgba(0,0,0,0.12); 
+            border-radius: 10px; 
+            margin-bottom: 8px; 
+        }
 
         .brand { 
             font-weight: 800; 
-            font-size: 19px; 
+            font-size: 20px; 
             background: linear-gradient(135deg, #FF2D55 0%, #FF9500 100%); 
             -webkit-background-clip: text; 
             -webkit-text-fill-color: transparent; 
-            letter-spacing: -0.5px;
+            letter-spacing: -0.8px;
         }
 
         /* Список глав */
         #chapters-list { 
-            height: 0; 
+            max-height: 70vh; 
             overflow-y: auto; 
-            padding: 0 16px; 
-            transition: height 0.4s ease; 
+            padding: 0 16px 40px 16px; 
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        #ios-menu.open #chapters-list {
+            opacity: 1;
         }
 
         .chapter-btn { 
             width: 100%; 
-            padding: 15px; 
-            background: #f2f2f7; 
+            padding: 18px; 
+            background: rgba(0,0,0,0.04); 
             border: none; 
-            border-radius: 14px; 
-            font-size: 15px; 
+            border-radius: 16px; 
+            font-size: 16px; 
             font-weight: 600; 
             color: #1c1c1e; 
-            margin-bottom: 8px; 
-            text-align: left; 
+            margin-bottom: 10px; 
+            text-align: left;
+            transition: background 0.2s;
         }
 
-        .chapter-btn.active { background: var(--apple-blue); color: #fff; }
+        .chapter-btn:active { background: rgba(0,0,0,0.1); }
+
+        .chapter-btn.active { 
+            background: var(--apple-blue); 
+            color: #fff; 
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+        }
         
-        /* Кнопка сброса */
-        .reset-btn { color: var(--apple-red); text-align: center; background: rgba(255, 59, 48, 0.1); }
+        .reset-btn { color: var(--apple-red); text-align: center; font-weight: 700; margin-top: 10px; }
     </style>
 </head>
 <body>
 
     <main id="web-wrapper">
-        <iframe id="frame" src="https://pddtest.kz/tests/116573900" loading="eager"></iframe>
+        <iframe id="frame" src="https://pddtest.kz/tests/116573900"></iframe>
     </main>
 
     <nav id="ios-menu">
@@ -106,7 +134,7 @@
             <button class="chapter-btn active" onclick="changePage('https://pddtest.kz/tests/116573900', this)">1. Общие положения</button>
             <button class="chapter-btn" onclick="changePage('https://pddtest.kz/tests/116694380', this)">2. Обязанности водителей</button>
             <button class="chapter-btn" onclick="changePage('https://pddtest.kz/tests/116694605', this)">3. Обязанности пешеходов</button>
-            <button class="chapter-btn" onclick="changePage('https://pddtest.kz/tests/116694748', this)">4. Обязанности пассажиров</button>
+            <button class="chapter-btn" onclick="changePage('https://pddtest.kz/tests/116694748', this)">4. Пассажиры</button>
             <button class="chapter-btn" onclick="changePage('https://pddtest.kz/tests/116695046', this)">5. Светофоры</button>
             <button class="chapter-btn" onclick="changePage('https://pddtest.kz/tests/116695267', this)">6. Спецсигналы</button>
             <button class="chapter-btn" onclick="changePage('https://pddtest.kz/tests/116695393', this)">7. Аварийка</button>
@@ -127,21 +155,17 @@
             <button class="chapter-btn" onclick="changePage('https://pddtest.kz/tests/116697798', this)">22. Перевозка людей</button>
             <button class="chapter-btn" onclick="changePage('https://pddtest.kz/tests/116697917', this)">23. Перевозка грузов</button>
             <button class="chapter-btn" onclick="changePage('https://pddtest.kz/tests/116698417', this)">🏁 Все дорожные знаки</button>
-            <button class="chapter-btn reset-btn" onclick="location.reload()">Обновить страницу</button>
+            <button class="chapter-btn reset-btn" onclick="location.reload()">Обновить систему</button>
         </div>
     </nav>
 
     <script>
-        const menu = document.getElementById('ios-menu'), 
-              list = document.getElementById('chapters-list'), 
-              frame = document.getElementById('frame');
-        let isOpened = false;
+        const menu = document.getElementById('ios-menu');
+        const frame = document.getElementById('frame');
 
         function toggleChapters() {
-            isOpened = !isOpened;
-            list.style.height = isOpened ? "60vh" : "0";
-            list.style.paddingTop = isOpened ? "10px" : "0";
-            list.style.paddingBottom = isOpened ? "40px" : "0";
+            const isOpen = menu.classList.toggle('open');
+            document.body.classList.toggle('menu-open', isOpen);
         }
 
         function changePage(url, btn) {
