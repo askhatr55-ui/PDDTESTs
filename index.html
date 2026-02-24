@@ -5,40 +5,46 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PDD TEST PRO</title>
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; font-family: sans-serif; background: #000; }
-        #iframe-wrap { height: 100%; width: 100%; }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body, html { height: 100%; width: 100%; font-family: -apple-system, sans-serif; background: #000; overflow: hidden; }
+
+        #splash { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: url('https://images.unsplash.com/photo-1542282088-fe84dd078043?q=80&w=2000') center/cover; z-index: 99999; display: flex; align-items: center; justify-content: center; transition: opacity 1s ease; }
+        
+        #iframe-wrap { height: 100%; width: 100%; position: absolute; }
         iframe { width: 100%; height: 100%; border: none; }
 
-        /* Меню - "живое", следует за пальцем */
         #menu { 
             position: fixed; bottom: 0; left: 0; right: 0; height: 85vh;
             background: #fff; border-radius: 30px 30px 0 0;
             z-index: 10000; touch-action: none;
             box-shadow: 0 -10px 30px rgba(0,0,0,0.2);
-            transition: transform 0.1s ease-out; /* Очень быстрый отклик */
-            transform: translateY(calc(85vh - 70px));
+            will-change: transform;
         }
 
-        .handle { height: 70px; display: flex; align-items: center; justify-content: center; }
+        .handle { height: 70px; display: flex; align-items: center; justify-content: center; cursor: grab; }
         .line { width: 60px; height: 6px; background: #ccc; border-radius: 5px; }
         
         #content { height: calc(100% - 70px); overflow-y: auto; padding: 20px; }
-        .btn { display: block; width: 100%; padding: 16px; margin-bottom: 10px; background: #f0f0f0; border: none; border-radius: 12px; font-weight: bold; }
+        .btn { display: block; width: 100%; padding: 16px; margin-bottom: 10px; background: #f0f0f0; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; }
+        .btn-auth { background: #007aff; color: white; }
     </style>
 </head>
 <body>
 
+<div id="splash"></div>
 <div id="iframe-wrap"><iframe id="frame" src="about:blank"></iframe></div>
 
-<div id="menu">
+<div id="menu" id="menu-el">
     <div class="handle" id="handle"><div class="line"></div></div>
     <div id="content">
-        <button class="btn" onclick="window.open('https://pddtest.kz/auth', '_blank')">🔑 Авторизация (новая вкладка)</button>
+        <button class="btn btn-auth" onclick="window.open('https://pddtest.kz/auth', '_blank')">🔑 Авторизация (новая вкладка)</button>
         <div id="links"></div>
     </div>
 </div>
 
 <script>
+    window.onload = () => setTimeout(() => document.getElementById('splash').style.opacity = '0', 1000);
+
     const links = [
         {name: "1. Общие положения", url: "https://pddtest.kz/tests/116573900"},
         {name: "2. Обязанности водителей", url: "https://pddtest.kz/tests/116694380"},
@@ -68,37 +74,56 @@
         {name: "🏁 Все знаки", url: "https://pddtest.kz/tests/116698417"}
     ];
 
-    links.forEach(l => document.getElementById('links').innerHTML += `<button class="btn" onclick="document.getElementById('frame').src='${l.url}'; document.getElementById('menu').style.transform='translateY(calc(85vh - 70px))'">${l.name}</button>`);
+    links.forEach(l => {
+        document.getElementById('links').innerHTML += `<button class="btn" onclick="document.getElementById('frame').src='${l.url}'; closeMenu()">${l.name}</button>`;
+    });
 
-    // Логика "живого" свайпа
     const menu = document.getElementById('menu');
-    let startY = 0;
-    let isDragging = false;
+    const handle = document.getElementById('handle');
+    const closedY = window.innerHeight * 0.85 - 70;
+    let startY = 0, currentY = closedY;
 
-    menu.addEventListener('touchstart', (e) => {
+    menu.style.transform = `translateY(${closedY}px)`;
+
+    function closeMenu() {
+        menu.style.transition = 'transform 0.3s ease-out';
+        menu.style.transform = `translateY(${closedY}px)`;
+    }
+
+    handle.addEventListener('touchstart', (e) => {
         startY = e.touches[0].clientY;
-        isDragging = true;
+        menu.style.transition = 'none';
     }, {passive: true});
 
-    menu.addEventListener('touchmove', (e) => {
-        if (!isDragging) return;
+    window.addEventListener('touchmove', (e) => {
         let delta = e.touches[0].clientY - startY;
-        let pos = Math.max(0, Math.min(window.innerHeight * 0.85 - 70, (window.innerHeight * 0.85 - 70) + delta));
-        menu.style.transform = `translateY(${pos}px)`;
+        let newY = Math.max(0, Math.min(closedY, currentY + delta));
+        menu.style.transform = `translateY(${newY}px)`;
     }, {passive: true});
 
-    menu.addEventListener('touchend', (e) => {
-        isDragging = false;
-        // Авто-доводка (если сдвинули больше чем на 100px - открываем или закрываем)
-        if (e.changedTouches[0].clientY < window.innerHeight / 2) menu.style.transform = 'translateY(0)';
-        else menu.style.transform = 'translateY(calc(85vh - 70px))';
+    window.addEventListener('touchend', (e) => {
+        currentY = parseInt(menu.style.transform.replace(/[^0-9]/g, ''));
+        menu.style.transition = 'transform 0.3s ease-out';
+        if (startY - e.changedTouches[0].clientY > 50) {
+            menu.style.transform = 'translateY(0)';
+            currentY = 0;
+        } else {
+            menu.style.transform = `translateY(${closedY}px)`;
+            currentY = closedY;
+        }
     }, {passive: true});
 
-    // Нажатие на полоску (для тех, кто не хочет свайпать)
-    document.getElementById('handle').onclick = () => {
-        if(menu.style.transform === 'translateY(0px)') menu.style.transform = 'translateY(calc(85vh - 70px))';
-        else menu.style.transform = 'translateY(0)';
+    handle.onclick = () => {
+        menu.style.transition = 'transform 0.3s ease-out';
+        if (currentY === 0) { menu.style.transform = `translateY(${closedY}px)`; currentY = closedY; }
+        else { menu.style.transform = 'translateY(0)'; currentY = 0; }
     };
+
+    let idle = 0;
+    setInterval(() => {
+        if(++idle > 60) document.getElementById('frame').src = 'about:blank';
+    }, 1000);
+    window.onmousemove = window.ontouchstart = () => idle = 0;
 </script>
 </body>
 </html>
