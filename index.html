@@ -6,25 +6,29 @@
     <title>PDD TEST PRO</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        body, html { height: 100%; width: 100%; overflow: hidden; background: #000; }
+        body, html { height: 100%; width: 100%; overflow: hidden; font-family: -apple-system, sans-serif; }
 
-        /* Изолируем iframe, чтобы он не воровал клики */
-        #frame { width: 100%; height: 100%; border: none; z-index: 1; }
+        /* Приятный фон вместо черного экрана */
+        body { 
+            background: url('https://images.unsplash.com/photo-1542282088-fe84dd078043?q=80&w=2000') center/cover; 
+        }
+
+        #frame { width: 100%; height: 100%; border: none; z-index: 1; display: block; }
 
         #menu { 
             position: fixed; bottom: 0; left: 0; right: 0; height: 90vh;
-            background: #fff; border-radius: 30px 30px 0 0;
-            z-index: 9999; /* Всегда сверху */
-            box-shadow: 0 -10px 20px rgba(0,0,0,0.3);
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);
+            border-radius: 30px 30px 0 0; z-index: 9999;
+            box-shadow: 0 -10px 20px rgba(0,0,0,0.1);
             transform: translateY(calc(90vh - 70px));
             transition: transform 0.3s cubic-bezier(0.19, 1, 0.22, 1);
         }
 
-        .handle { height: 70px; display: flex; align-items: center; justify-content: center; touch-action: none; }
-        .line { width: 60px; height: 6px; background: #999; border-radius: 5px; }
+        .handle { height: 70px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .line { width: 60px; height: 6px; background: #ccc; border-radius: 5px; }
         
         #content { height: calc(100% - 70px); overflow-y: auto; padding: 20px; }
-        .btn { display: block; width: 100%; padding: 18px; margin-bottom: 12px; background: #f0f0f0; border: none; border-radius: 15px; font-weight: bold; cursor: pointer; }
+        .btn { display: block; width: 100%; padding: 18px; margin-bottom: 12px; background: #eee; border: none; border-radius: 15px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -34,7 +38,7 @@
 <div id="menu">
     <div class="handle" id="handle"><div class="line"></div></div>
     <div id="content">
-        <button class="btn" style="background:#007aff; color:#fff;" onclick="window.open('https://pddtest.kz/auth', '_blank')">🔑 Авторизация (в новой вкладке)</button>
+        <button class="btn" style="background:#007aff; color:#fff;" onclick="window.open('https://pddtest.kz/auth', '_blank')">🔑 Авторизация (новая вкладка)</button>
         <div id="links"></div>
     </div>
 </div>
@@ -42,28 +46,46 @@
 <script>
     const links = [
         {name: "1. Общие положения", url: "https://pddtest.kz/tests/116573900"},
-        {name: "2. Обязанности водителей", url: "https://pddtest.kz/tests/116694380"}
+        {name: "2. Обязанности водителей", url: "https://pddtest.kz/tests/116694380"},
+        {name: "3. Обязанности пешеходов", url: "https://pddtest.kz/tests/116694605"},
+        {name: "4. Пассажиры", url: "https://pddtest.kz/tests/116694748"},
+        {name: "5. Светофоры", url: "https://pddtest.kz/tests/116695046"},
+        {name: "6. Спецсигналы", url: "https://pddtest.kz/tests/116695267"},
+        {name: "7. Аварийка", url: "https://pddtest.kz/tests/116695393"},
+        {name: "8. Маневрирование", url: "https://pddtest.kz/tests/116695609"},
+        {name: "9. Расположение ТС", url: "https://pddtest.kz/tests/116695699"},
+        {name: "10. Скорость", url: "https://pddtest.kz/tests/116695865"},
+        {name: "11. Обгон", url: "https://pddtest.kz/tests/116695998"},
+        {name: "12. Остановка", url: "https://pddtest.kz/tests/116696089"},
+        {name: "13. Перекрестки", url: "https://pddtest.kz/tests/116696211"},
+        {name: "14. Переходы", url: "https://pddtest.kz/tests/116696308"},
+        {name: "15. Ж/Д пути", url: "https://pddtest.kz/tests/116696386"},
+        {name: "16. Автомагистрали", url: "https://pddtest.kz/tests/116696458"},
+        {name: "17. Жилые зоны", url: "https://pddtest.kz/tests/116696872"},
+        {name: "18. Маршрутные ТС", url: "https://pddtest.kz/tests/116697005"},
+        {name: "19. Свет и звук", url: "https://pddtest.kz/tests/116697201"},
+        {name: "20. Буксировка", url: "https://pddtest.kz/tests/116697512"},
+        {name: "21. Учебная езда", url: "https://pddtest.kz/tests/116697704"},
+        {name: "22. Перевозка людей", url: "https://pddtest.kz/tests/116697798"},
+        {name: "23. Перевозка грузов", url: "https://pddtest.kz/tests/116697917"},
+        {name: "24. Велосипеды/мопеды", url: "https://pddtest.kz/tests/116698038"},
+        {name: "25. Гужевые повозки", url: "https://pddtest.kz/tests/116698229"},
+        {name: "🏁 Все знаки", url: "https://pddtest.kz/tests/116698417"}
     ];
-
-    links.forEach(l => {
-        document.getElementById('links').innerHTML += `<button class="btn" onclick="document.getElementById('frame').src='${l.url}'; toggleMenu(false)">${l.name}</button>`;
-    });
 
     const menu = document.getElementById('menu');
     const handle = document.getElementById('handle');
-    
-    function toggleMenu(open) {
-        menu.style.transform = open ? 'translateY(0)' : 'translateY(calc(90vh - 70px))';
-    }
 
-    // Свайп строго по handle
-    let startY = 0;
-    handle.addEventListener('touchstart', (e) => startY = e.touches[0].clientY, {passive: true});
-    handle.addEventListener('touchend', (e) => {
-        let diff = startY - e.changedTouches[0].clientY;
-        if (Math.abs(diff) > 30) toggleMenu(diff > 0);
-        else toggleMenu(menu.style.transform.includes('0px') ? false : true);
-    }, {passive: true});
+    // Добавляем все кнопки
+    links.forEach(l => {
+        document.getElementById('links').innerHTML += `<button class="btn" onclick="document.getElementById('frame').src='${l.url}'; menu.style.transform='translateY(calc(90vh - 70px))'">${l.name}</button>`;
+    });
+
+    // Нажатие на полоску (железобетонное)
+    handle.onclick = () => {
+        const isOpen = menu.style.transform === 'translateY(0px)';
+        menu.style.transform = isOpen ? 'translateY(calc(90vh - 70px))' : 'translateY(0)';
+    };
 </script>
 </body>
 </html>
