@@ -5,22 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PDD TEST PRO</title>
     <style>
-        :root { --accent: #007aff; --bg: #f2f2f7; }
+        :root { --accent: #007aff; }
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         body, html { height: 100%; width: 100%; font-family: -apple-system, sans-serif; background: #000; overflow: hidden; }
 
-        /* Эстетичный экран загрузки */
-        #splash { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: url('https://images.unsplash.com/photo-1542282088-fe84dd078043?q=80&w=2000') center/cover; 
-            z-index: 99999; display: flex; align-items: center; justify-content: center; 
-            transition: opacity 1s ease;
-        }
-        #splash::after { content: "PDD TEST PRO"; color: #fff; font-size: 32px; font-weight: 800; letter-spacing: 4px; text-transform: uppercase; }
-
+        /* Экран загрузки */
+        #splash { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: url('https://images.unsplash.com/photo-1542282088-fe84dd078043?q=80&w=2000') center/cover; z-index: 99999; display: flex; align-items: center; justify-content: center; transition: opacity 1s ease; }
+        
         #app-container { display: flex; height: 100%; width: 100%; }
-        #sidebar { width: 320px; background: #fff; border-right: 1px solid #e5e5ea; overflow-y: auto; padding: 25px; }
+        #sidebar { width: 320px; background: #fff; border-right: 1px solid #e5e5ea; overflow-y: auto; padding: 25px; z-index: 10; }
         #main-view { flex-grow: 1; position: relative; }
+        iframe { width: 100%; height: 100%; border: none; }
         
         .btn { display: block; width: 100%; padding: 18px; margin-bottom: 10px; background: #f8f8f8; border: 1px solid #e5e5ea; border-radius: 16px; font-weight: 600; text-align: left; cursor: pointer; }
         .btn-auth { background: var(--accent); color: white; text-align: center; }
@@ -28,11 +23,12 @@
         @media (max-width: 768px) { #sidebar { display: none; } #ios-menu { display: block !important; } }
 
         #ios-menu { 
-            display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999;
-            background: #fff; border-radius: 30px 30px 0 0; transition: transform 0.4s;
+            display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 10000;
+            background: #fff; border-radius: 30px 30px 0 0; transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
             transform: translateY(calc(100% - 70px)); height: 80vh; box-shadow: 0 -10px 30px rgba(0,0,0,0.1);
         }
-        .handle-bar { padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        #ios-menu.open { transform: translateY(0); }
+        .handle-bar { padding: 20px; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
         .handle-line { width: 50px; height: 5px; background: #ccc; border-radius: 10px; margin-bottom: 10px; }
         #chapters-list { height: calc(100% - 70px); overflow-y: auto; padding: 0 20px; }
     </style>
@@ -105,7 +101,7 @@
         idleTime = 0; 
     }
 
-    // Таймер безопасности (жесткий сброс)
+    // Таймер
     let idleTime = 0;
     setInterval(() => {
         idleTime++;
@@ -113,13 +109,17 @@
     }, 1000);
     window.onmousemove = window.ontouchstart = () => idleTime = 0;
 
+    // Исправленный свайп
+    const menu = document.getElementById('ios-menu');
     const drag = document.getElementById('drag-handle');
     let startY = 0;
-    drag.addEventListener('click', () => document.getElementById('ios-menu').classList.toggle('open'));
+
+    drag.addEventListener('click', () => menu.classList.toggle('open'));
     drag.addEventListener('touchstart', (e) => startY = e.touches[0].clientY, {passive: true});
     drag.addEventListener('touchend', (e) => {
-        if ((startY - e.changedTouches[0].clientY) > 50) document.getElementById('ios-menu').classList.add('open');
-        else if ((e.changedTouches[0].clientY - startY) > 50) document.getElementById('ios-menu').classList.remove('open');
+        let diff = startY - e.changedTouches[0].clientY;
+        if (diff > 50) menu.classList.add('open');
+        else if (diff < -50) menu.classList.remove('open');
     }, {passive: true});
 </script>
 </body>
