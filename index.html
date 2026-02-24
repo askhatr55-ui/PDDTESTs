@@ -5,207 +5,118 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>PDD TEST PRO</title>
     <style>
-        :root {
-            --apple-blue: #007aff;
-            --apple-red: #ff3b30;
-            --glass: rgba(255, 255, 255, 0.96);
+        :root { --apple-blue: #007aff; --apple-red: #ff3b30; --sidebar-w: 260px; }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
+        body, html { height: 100%; width: 100%; font-family: -apple-system, sans-serif; background: #fff; overflow: hidden; }
+
+        /* PC Layout */
+        #app-container { display: flex; height: 100%; }
+        #sidebar { width: var(--sidebar-w); background: #f2f2f7; border-right: 1px solid #ddd; overflow-y: auto; padding: 15px; }
+        #main-view { flex-grow: 1; position: relative; }
+        iframe { width: 100%; height: 100%; border: none; }
+
+        /* Mobile Layout */
+        @media (max-width: 768px) {
+            #sidebar { display: none; }
+            #ios-menu { display: block; }
         }
+
+        /* Mobile Menu */
+        #ios-menu { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(255,255,255,0.96); backdrop-filter: blur(20px); border-radius: 30px 30px 0 0; z-index: 9999; transition: 0.5s cubic-bezier(0.32, 0.72, 0, 1); transform: translateY(calc(100% - 75px)); }
+        #ios-menu.open { transform: translateY(0); }
+        .handle-container { padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .handle { width: 40px; height: 5px; background: #ccc; border-radius: 10px; margin-bottom: 10px; }
+        #chapters-list { max-height: 70vh; overflow-y: auto; padding: 0 15px 50px 15px; }
         
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; user-select: none; }
-        
-        body, html { 
-            height: 100%; width: 100%; 
-            background-color: #000; 
-            font-family: -apple-system, system-ui, sans-serif; 
-            overflow: hidden; 
-        }
-
-        #web-wrapper { 
-            position: absolute; 
-            top: 0; left: 0; right: 0; bottom: 0; 
-            background: #fff;
-            transition: transform 0.6s cubic-bezier(0.32, 0.72, 0, 1), border-radius 0.6s;
-        }
-
-        iframe { width: 100%; height: 100%; border: none; display: block; }
-
-        body.menu-open #web-wrapper {
-            transform: scale(0.95);
-            border-radius: 20px;
-            opacity: 0.7;
-        }
-
-        /* Нижнее меню с поддержкой свайпов */
-        #ios-menu {
-            position: fixed; bottom: 0; left: 0; right: 0;
-            background: var(--glass); 
-            backdrop-filter: blur(30px) saturate(200%); 
-            -webkit-backdrop-filter: blur(30px) saturate(200%);
-            border-top: 1px solid rgba(0,0,0,0.05); 
-            z-index: 9999;
-            transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1);
-            padding-bottom: env(safe-area-inset-bottom);
-            border-radius: 30px 30px 0 0;
-            transform: translateY(calc(100% - 75px)); /* Видна только шапка */
-            touch-action: none; /* Отключаем стандартный скролл браузера для меню */
-        }
-
-        #ios-menu.open {
-            transform: translateY(0);
-        }
-
-        .handle-container { 
-            padding: 18px; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            cursor: pointer;
-            touch-action: pan-y; /* Разрешаем тянуть по вертикали */
-        }
-
-        .handle { 
-            width: 36px; height: 5px; 
-            background: rgba(0,0,0,0.12); 
-            border-radius: 10px; 
-            margin-bottom: 8px; 
-        }
-
-        .brand { 
-            font-weight: 800; 
-            font-size: 20px; 
-            background: linear-gradient(135deg, #FF2D55 0%, #FF9500 100%); 
-            -webkit-background-clip: text; 
-            -webkit-text-fill-color: transparent; 
-            letter-spacing: -0.8px;
-        }
-
-        #chapters-list { 
-            max-height: 75vh; 
-            overflow-y: auto; 
-            padding: 0 16px 40px 16px; 
-            opacity: 0;
-            transition: opacity 0.3s;
-            touch-action: pan-y; /* Позволяет скроллить список внутри */
-        }
-
-        #ios-menu.open #chapters-list {
-            opacity: 1;
-        }
-
-        .chapter-btn { 
-            width: 100%; 
-            padding: 18px; 
-            background: rgba(0,0,0,0.04); 
-            border: none; 
-            border-radius: 16px; 
-            font-size: 16px; 
-            font-weight: 600; 
-            color: #1c1c1e; 
-            margin-bottom: 10px; 
-            text-align: left;
-        }
-
-        .chapter-btn.active { 
-            background: var(--apple-blue); 
-            color: #fff; 
-        }
-        
-        .reset-btn { color: var(--apple-red); text-align: center; font-weight: 700; }
+        .btn { display: block; width: 100%; padding: 16px; margin-bottom: 10px; background: #fff; border: 1px solid #eee; border-radius: 14px; text-align: left; font-weight: 600; cursor: pointer; }
+        .btn:active { background: #f2f2f7; }
     </style>
 </head>
 <body>
 
-    <main id="web-wrapper">
-        <iframe id="frame" src="https://pddtest.kz/tests/116573900"></iframe>
+<div id="app-container">
+    <aside id="sidebar">
+        <h3 style="margin-bottom: 15px;">PDD TEST PRO</h3>
+        <button class="btn" onclick="changePage('https://pddtest.kz/auth')">🔑 Авторизация</button>
+        <div id="pc-chapters"></div>
+    </aside>
+    <main id="main-view">
+        <iframe id="frame" src="https://pddtest.kz/auth"></iframe>
     </main>
+</div>
 
-    <nav id="ios-menu">
-        <div class="handle-container" id="drag-handle">
-            <div class="handle"></div>
-            <div class="brand">PDD TEST PRO</div>
-        </div>
+<nav id="ios-menu">
+    <div class="handle-container" id="drag-handle">
+        <div class="handle"></div>
+        <div style="font-weight: 800; color: #007aff;">PDD TEST PRO</div>
+    </div>
+    <div id="chapters-list"></div>
+</nav>
 
-        <div id="chapters-list">
-            <button class="chapter-btn active" onclick="changePage('https://pddtest.kz/tests/116573900', this)">1. Общие положения</button>
-            <button class="chapter-btn" onclick="changePage('https://pddtest.kz/tests/116694748', this)">4. Пассажиры</button>
-            <button class="chapter-btn" onclick="changePage('https://pddtest.kz/tests/116695046', this)">5. Светофоры</button>
-            <button class="chapter-btn" onclick="changePage('https://pddtest.kz/tests/116695267', this)">6. Спецсигналы</button>
-            <button class="chapter-btn" onclick="changePage('https://pddtest.kz/tests/116695393', this)">7. Аварийка</button>
-            <button class="chapter-btn" onclick="changePage('https://pddtest.kz/tests/116695609', this)">8. Маневрирование</button>
-            <button class="chapter-btn" onclick="changePage('https://pddtest.kz/tests/116695699', this)">9. Расположение ТС</button>
-            <button class="chapter-btn" onclick="changePage('https://pddtest.kz/tests/116695865', this)">10. Скорость</button>
-            <button class="chapter-btn" onclick="changePage('https://pddtest.kz/tests/116695998', this)">11. Обгон</button>
-            <button class="chapter-btn" onclick="changePage('https://pddtest.kz/tests/116696089', this)">12. Остановка</button>
-            <button class="chapter-btn" onclick="changePage('https://pddtest.kz/tests/116696211', this)">13. Перекрестки</button>
-            <button class="chapter-btn" onclick="changePage('https://pddtest.kz/tests/116696308', this)">14. Переходы</button>
-            <button class="chapter-btn" onclick="changePage('https://pddtest.kz/tests/116696458', this)">16. Автомагистрали</button>
-            <button class="chapter-btn" onclick="changePage('https://pddtest.kz/tests/116696872', this)">17. Жилые зоны</button>
-            <button class="chapter-btn" onclick="changePage('https://pddtest.kz/tests/116697005', this)">18. Маршрутные ТС</button>
-            <button class="chapter-btn" onclick="changePage('https://pddtest.kz/tests/116697201', this)">19. Свет и звук</button>
-            <button class="chapter-btn" onclick="changePage('https://pddtest.kz/tests/116697512', this)">20. Буксировка</button>
-            <button class="chapter-btn" onclick="changePage('https://pddtest.kz/tests/116697704', this)">21. Учебная езда</button>
-            <button class="chapter-btn" onclick="changePage('https://pddtest.kz/tests/116697798', this)">22. Перевозка людей</button>
-            <button class="chapter-btn" onclick="changePage('https://pddtest.kz/tests/116697917', this)">23. Перевозка грузов</button>
-            <button class="chapter-btn" onclick="changePage('https://pddtest.kz/tests/116698417', this)">🏁 Все дорожные знаки</button>
-            <button class="chapter-btn reset-btn" onclick="location.reload()">Обновить систему</button>
-        </div>
-    </nav>
+<script>
+    const chapters = [
+        {name: "Авторизация", url: "https://pddtest.kz/auth"},
+        {name: "1. Общие положения", url: "https://pddtest.kz/tests/116573900"},
+        {name: "2. Обязанности водителей", url: "https://pddtest.kz/tests/116694380"},
+        {name: "3. Обязанности пешеходов", url: "https://pddtest.kz/tests/116694605"},
+        {name: "4. Пассажиры", url: "https://pddtest.kz/tests/116694748"},
+        {name: "5. Светофоры", url: "https://pddtest.kz/tests/116695046"},
+        {name: "6. Спецсигналы", url: "https://pddtest.kz/tests/116695267"},
+        {name: "7. Аварийная сигнализация", url: "https://pddtest.kz/tests/116695393"},
+        {name: "8. Маневрирование", url: "https://pddtest.kz/tests/116695609"},
+        {name: "9. Расположение ТС", url: "https://pddtest.kz/tests/116695699"},
+        {name: "10. Скорость", url: "https://pddtest.kz/tests/116695865"},
+        {name: "11. Обгон и разъезд", url: "https://pddtest.kz/tests/116695998"},
+        {name: "12. Остановка и стоянка", url: "https://pddtest.kz/tests/116696089"},
+        {name: "13. Перекрестки", url: "https://pddtest.kz/tests/116696211"},
+        {name: "14. Переходы", url: "https://pddtest.kz/tests/116696308"},
+        {name: "15. Ж/Д пути", url: "https://pddtest.kz/tests/116696386"},
+        {name: "16. Автомагистрали", url: "https://pddtest.kz/tests/116696458"},
+        {name: "17. Жилые зоны", url: "https://pddtest.kz/tests/116696872"},
+        {name: "18. Маршрутные ТС", url: "https://pddtest.kz/tests/116697005"},
+        {name: "19. Свет и звук", url: "https://pddtest.kz/tests/116697201"},
+        {name: "20. Буксировка", url: "https://pddtest.kz/tests/116697512"},
+        {name: "21. Учебная езда", url: "https://pddtest.kz/tests/116697704"},
+        {name: "22. Перевозка людей", url: "https://pddtest.kz/tests/116697798"},
+        {name: "23. Перевозка грузов", url: "https://pddtest.kz/tests/116697917"},
+        {name: "24. Велосипеды и мопеды", url: "https://pddtest.kz/tests/116698038"},
+        {name: "25. Гужевые повозки", url: "https://pddtest.kz/tests/116698229"},
+        {name: "🏁 Все знаки", url: "https://pddtest.kz/tests/116698417"}
+    ];
 
-    <script>
-        const menu = document.getElementById('ios-menu');
-        const frame = document.getElementById('frame');
-        const dragHandle = document.getElementById('drag-handle');
-        
-        let startY = 0;
-        let currentY = 0;
-        let isOpened = false;
+    const frame = document.getElementById('frame');
+    const menu = document.getElementById('ios-menu');
+    const listPC = document.getElementById('pc-chapters');
+    const listMobile = document.getElementById('chapters-list');
+    let idleTime = 0;
 
-        // Переключение кликом
-        dragHandle.addEventListener('click', () => {
-            toggleMenu(!isOpened);
-        });
+    // Генерация списка
+    chapters.forEach(c => {
+        const btn = `<button class="btn" onclick="changePage('${c.url}')">${c.name}</button>`;
+        listPC.innerHTML += btn;
+        listMobile.innerHTML += btn;
+    });
 
-        function toggleMenu(open) {
-            isOpened = open;
-            menu.classList.toggle('open', open);
-            document.body.classList.toggle('menu-open', open);
-            menu.style.transform = ''; // Сброс ручного сдвига
-        }
+    function changePage(url) {
+        frame.src = url;
+        menu.classList.remove('open');
+        idleTime = 0;
+    }
 
-        // Логика Свайпа (Touch Events)
-        dragHandle.addEventListener('touchstart', (e) => {
-            startY = e.touches[0].clientY;
-            menu.style.transition = 'none'; // Отключаем анимацию пока тянем
-        }, {passive: true});
+    function toggleMenu() { menu.classList.toggle('open'); }
 
-        dragHandle.addEventListener('touchmove', (e) => {
-            currentY = e.touches[0].clientY;
-            let diff = currentY - startY;
-
-            if (!isOpened && diff < 0) { // Тянем вверх закрытое
-                menu.style.transform = `translateY(calc(100% - 75px + ${diff}px))`;
-            } else if (isOpened && diff > 0) { // Тянем вниз открытое
-                menu.style.transform = `translateY(${diff}px)`;
+    // Таймер выхода (60 сек)
+    setInterval(() => {
+        idleTime++;
+        if (idleTime >= 60) {
+            if(frame.src !== "https://pddtest.kz/auth") {
+                frame.src = "https://pddtest.kz/auth";
+                alert("Сессия завершена для безопасности.");
             }
-        }, {passive: true});
-
-        dragHandle.addEventListener('touchend', (e) => {
-            menu.style.transition = 'transform 0.5s cubic-bezier(0.32, 0.72, 0, 1)';
-            let diff = currentY - startY;
-
-            if (Math.abs(diff) > 100) { // Если протянули больше 100px
-                toggleMenu(diff < 0); // Если diff отрицательный — открываем (вверх), иначе закрываем
-            } else {
-                toggleMenu(isOpened); // Возвращаем в исходное
-            }
-        });
-
-        function changePage(url, btn) {
-            frame.src = url;
-            document.querySelectorAll('.chapter-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            toggleMenu(false);
+            idleTime = 0;
         }
-    </script>
+    }, 1000);
+    window.onmousemove = window.ontouchstart = () => idleTime = 0;
+</script>
 </body>
 </html>
