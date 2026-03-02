@@ -32,12 +32,20 @@
         .handle { height: 70px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .line { width: 60px; height: 6px; background: #ccc; border-radius: 5px; }
         #content { height: 100%; overflow-y: auto; padding: 20px; -webkit-overflow-scrolling: touch; }
-        .btn { display: block; width: 100%; padding: 18px; margin-bottom: 12px; background: #f0f0f0; border: none; border-radius: 15px; font-weight: bold; cursor: pointer; text-align: center; }
-        .btn:active { opacity: 0.7; }
+        
+        /* Базовый стиль кнопок */
+        .btn { display: block; width: 100%; padding: 18px; margin-bottom: 12px; border: none; border-radius: 15px; font-weight: bold; cursor: pointer; text-align: center; transition: all 0.2s; }
+        .btn:active { opacity: 0.6; transform: scale(0.98); }
+        
         .btn-action { background: #007aff; color: #fff; }
         .btn-refresh { background: #5856d6; color: #fff; }
         .btn-exit { background: #ff3b30; color: #fff; }
-        .link-btn { text-align: left; background: #f9f9f9; }
+        
+        /* Стиль кнопок глав (ссылок) */
+        .link-btn { text-align: left; padding-left: 20px; position: relative; overflow: hidden; color: #000; }
+        
+        /* Разделитель */
+        hr { margin: 20px 0; border: 0; border-top: 1px solid #eee; }
     </style>
 </head>
 <body>
@@ -55,6 +63,18 @@
 </div>
 
 <script>
+    // Цвета в стиле iOS для разных глав
+    const iosColors = [
+        '#E3F2FD', // Светло-голубой
+        '#F3E5F5', // Светло-пурпурный
+        '#E8F5E9', // Светло-зеленый
+        '#FFF3E0', // Светло-оранжевый
+        '#FCE4EC', // Светло-розовый
+        '#E0F2F1', // Светло-бирюзовый
+        '#FFFDE7', // Светло-желтый
+        '#F5F5F5'  // Светло-серый
+    ];
+
     const links = [
         {name: "1. Общие положения", url: "https://pddtest.kz/tests/116573900"},
         {name: "4. Пассажиры", url: "https://pddtest.kz/tests/116694748"},
@@ -83,20 +103,14 @@
 
     const frame = document.getElementById('frame'), menu = document.getElementById('menu'), handle = document.getElementById('handle');
     let idleTimer;
-    const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 минут
+    const SESSION_TIMEOUT = 30 * 60 * 1000;
 
     function resetSystem() {
-        console.log("Выход из системы...");
         frame.src = 'https://pddtest.kz/logout';
-        setTimeout(() => { 
-            frame.src = 'https://pddtest.kz/'; 
-            toggle(false); 
-        }, 1000);
+        setTimeout(() => { frame.src = 'https://pddtest.kz/'; toggle(false); }, 1000);
     }
 
-    function goToAuth() {
-        window.location.href = 'https://pddtest.kz/auth';
-    }
+    function goToAuth() { window.location.href = 'https://pddtest.kz/auth'; }
 
     function refreshFrame() {
         let u = frame.src;
@@ -104,20 +118,14 @@
         setTimeout(() => { frame.src = u; toggle(false); }, 50);
     }
 
-    // ТАЙМЕР БЕЗДЕЙСТВИЯ (30 МИНУТ)
     function resetIdleTimer() { 
         clearTimeout(idleTimer); 
         idleTimer = setTimeout(resetSystem, SESSION_TIMEOUT); 
     }
 
-    ['mousedown', 'touchstart', 'keydown', 'scroll'].forEach(evt => 
-        document.addEventListener(evt, resetIdleTimer, true)
-    );
+    ['mousedown', 'touchstart', 'keydown', 'scroll'].forEach(evt => document.addEventListener(evt, resetIdleTimer, true));
 
-    function toggle(open) { 
-        menu.style.transform = open ? 'translateY(0)' : 'translateY(calc(50vh - 70px))'; 
-    }
-
+    function toggle(open) { menu.style.transform = open ? 'translateY(0)' : 'translateY(calc(50vh - 70px))'; }
     handle.addEventListener('click', () => toggle(menu.style.transform !== 'translateY(0px)'));
 
     function buildMenu(containerId) {
@@ -126,12 +134,17 @@
             <button class="btn btn-action" onclick="goToAuth()">🔑 Авторизация</button>
             <button class="btn btn-refresh" onclick="refreshFrame()">🔄 Обновить</button>
             <button class="btn btn-exit" onclick="resetSystem()">🚪 Выйти</button>
-            <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
+            <hr>
         `;
-        links.forEach(l => {
+        
+        links.forEach((l, index) => {
             let b = document.createElement('button');
             b.className = 'btn link-btn'; 
             b.innerText = l.name;
+            
+            // Назначаем цвет из палитры по кругу
+            b.style.backgroundColor = iosColors[index % iosColors.length];
+            
             b.onclick = () => { frame.src = l.url; toggle(false); };
             container.appendChild(b);
         });
@@ -160,7 +173,6 @@
         toggle(pos < (window.innerHeight * 0.25));
     }, {passive: false});
 
-    // Инициализация таймера при запуске
     resetIdleTimer();
 </script>
 </body>
