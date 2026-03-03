@@ -34,17 +34,27 @@
         #content { height: 100%; overflow-y: auto; padding: 20px; -webkit-overflow-scrolling: touch; }
         
         /* Базовый стиль кнопок */
-        .btn { display: block; width: 100%; padding: 18px; margin-bottom: 12px; border: none; border-radius: 15px; font-weight: bold; cursor: pointer; text-align: center; transition: all 0.2s; }
-        .btn:active { opacity: 0.6; transform: scale(0.98); }
+        .btn { display: block; width: 100%; padding: 18px; margin-bottom: 12px; border: none; border-radius: 15px; font-weight: bold; cursor: pointer; text-align: center; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
         
         .btn-action { background: #007aff; color: #fff; }
         .btn-refresh { background: #5856d6; color: #fff; }
         .btn-exit { background: #ff3b30; color: #fff; }
         
-        /* Стиль кнопок глав (ссылок) */
-        .link-btn { text-align: left; padding-left: 20px; position: relative; overflow: hidden; color: #000; }
+        /* Эффект прозрачности и четкости для глав */
+        .link-btn { 
+            text-align: left; 
+            padding-left: 20px; 
+            color: rgba(0, 0, 0, 0.7); /* Текст чуть приглушен */
+            opacity: 0.5; /* Сама кнопка прозрачная по умолчанию */
+        }
+
+        /* Когда нажимаем на кнопку (iPhone style) */
+        .link-btn:active { 
+            opacity: 1 !important; /* Становится четкой */
+            transform: scale(0.96); /* Слегка уменьшается */
+            color: #000; /* Текст становится черным */
+        }
         
-        /* Разделитель */
         hr { margin: 20px 0; border: 0; border-top: 1px solid #eee; }
     </style>
 </head>
@@ -62,17 +72,19 @@
     <div id="content"><div id="mobile-links"></div></div>
 </div>
 
+
+
 <script>
-    // Цвета в стиле iOS для разных глав
+    // Яркие цвета iOS (будут полупрозрачными в обычном состоянии)
     const iosColors = [
-        '#E3F2FD', // Светло-голубой
-        '#F3E5F5', // Светло-пурпурный
-        '#E8F5E9', // Светло-зеленый
-        '#FFF3E0', // Светло-оранжевый
-        '#FCE4EC', // Светло-розовый
-        '#E0F2F1', // Светло-бирюзовый
-        '#FFFDE7', // Светло-желтый
-        '#F5F5F5'  // Светло-серый
+        '#007AFF', // Blue
+        '#34C759', // Green
+        '#5856D6', // Purple
+        '#FF9500', // Orange
+        '#FF2D55', // Pink
+        '#AF52DE', // Violet
+        '#5AC8FA', // Sky
+        '#FF3B30'  // Red
     ];
 
     const links = [
@@ -142,8 +154,9 @@
             b.className = 'btn link-btn'; 
             b.innerText = l.name;
             
-            // Назначаем цвет из палитры по кругу
-            b.style.backgroundColor = iosColors[index % iosColors.length];
+            // Назначаем цвет
+            let color = iosColors[index % iosColors.length];
+            b.style.backgroundColor = color;
             
             b.onclick = () => { frame.src = l.url; toggle(false); };
             container.appendChild(b);
@@ -153,7 +166,6 @@
     buildMenu('sidebar-links');
     buildMenu('mobile-links');
 
-    // Свайп логика
     let startY = 0, currentY = 0;
     handle.addEventListener('touchstart', (e) => {
         startY = e.touches[0].clientY;
