@@ -2,59 +2,105 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>ВТШ ТАЛДЫКОРГАН</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         body, html { height: 100%; width: 100%; overflow: hidden; background: #000; font-family: -apple-system, sans-serif; }
-        #layout { display: flex; width: 100%; height: 100%; }
-        #frame { width: 100%; height: 100%; border: none; display: block; background: #fff; }
-        #sidebar { width: 320px; height: 100%; background: #fff; display: none; flex-direction: column; box-shadow: 2px 0 10px rgba(0,0,0,0.1); z-index: 1000; }
-        #menu { 
-            position: fixed; bottom: 0; left: 0; right: 0; height: 50vh; 
-            background: #fff; border-radius: 30px 30px 0 0; z-index: 9999; 
-            transform: translateY(calc(50vh - 70px)); 
-            box-shadow: 0 -5px 20px rgba(0,0,0,0.3);
-            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        
+        /* ГЛАВНОЕ ИСПРАВЛЕНИЕ: Гибкий контейнер для корректного скролла */
+        #main-wrapper {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100%;
         }
 
-        /* Стиль для нового заголовка */
         #custom-header {
             text-align: center;
             padding: 15px;
             background-color: #f8f9fa;
             border-bottom: 1px solid #eee;
-            color: #000;
-        }
-        #custom-header h1 {
-            font-size: 18px;
-            font-weight: bold;
+            flex-shrink: 0;
+            z-index: 100;
         }
 
-        @media (min-width: 769px) { #sidebar { display: flex; } #menu { display: none; } }
-        .handle { height: 70px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        #custom-header h1 {
+            font-size: 20px;
+            font-weight: bold;
+            opacity: 0;
+            animation: fadeDrop 1.5s ease-out forwards;
+        }
+
+        @keyframes fadeDrop {
+            0% { opacity: 0; transform: translateY(-10px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        #layout { 
+            flex-grow: 1; /* Занимает всё оставшееся место */
+            position: relative;
+            overflow: hidden; 
+        }
+
+        #frame { 
+            width: 100%; 
+            height: 100%; 
+            border: none; 
+            display: block; 
+            background: #fff;
+            /* Позволяет внутреннему контенту pddtest.kz скроллиться */
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Нижнее меню */
+        #menu { 
+            position: fixed; bottom: 0; left: 0; right: 0; height: 60vh; 
+            background: #fff; border-radius: 30px 30px 0 0; z-index: 9999; 
+            transform: translateY(calc(60vh - 70px)); 
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.3);
+            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        #sidebar { width: 320px; height: 100%; background: #fff; display: none; flex-direction: column; box-shadow: 2px 0 10px rgba(0,0,0,0.1); z-index: 1000; }
+        @media (min-width: 769px) { 
+            #sidebar { display: flex; } 
+            #menu { display: none; }
+            #main-wrapper { flex-direction: row; }
+        }
+
+        .handle { height: 70px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
         .line { width: 60px; height: 6px; background: #ccc; border-radius: 5px; }
-        #content { height: 100%; overflow-y: auto; padding: 20px; -webkit-overflow-scrolling: touch; }
-        .btn { display: block; width: 100%; padding: 18px; margin-bottom: 12px; border: none; border-radius: 15px; font-weight: bold; cursor: pointer; text-align: center; transition: all 0.3s ease; }
+        
+        #content { height: calc(100% - 70px); overflow-y: auto; padding: 20px; -webkit-overflow-scrolling: touch; }
+        
+        .btn { display: block; width: 100%; padding: 18px; margin-bottom: 12px; border: none; border-radius: 15px; font-weight: bold; cursor: pointer; text-align: center; font-size: 16px; }
         .btn-action { background: #007aff; color: #fff; }
         .btn-refresh { background: #5856d6; color: #fff; }
         .btn-exit { background: #ff3b30; color: #fff; }
-        .link-btn { text-align: left; padding-left: 20px; color: rgba(0, 0, 0, 0.7); opacity: 0.4; }
-        .link-btn.active-chapter { opacity: 1 !important; color: #000; transform: scale(1.02); border-left: 10px solid rgba(0,0,0,0.2); }
+        
+        .link-btn { text-align: left; padding-left: 20px; color: #fff; }
+        .active-chapter { border: 3px solid #000 !important; transform: scale(0.98); }
         hr { margin: 20px 0; border: 0; border-top: 1px solid #eee; }
     </style>
 </head>
 <body>
 
-<div id="custom-header">
-    <h1>ВТШ ТАЛДЫКОРГАН</h1>
-</div>
-
-<div id="layout">
+<div id="main-wrapper">
     <div id="sidebar">
         <div id="content"><div id="sidebar-links"></div></div>
     </div>
-    <iframe id="frame" name="main-frame" src="https://pddtest.kz/"></iframe>
+
+    <div style="display:flex; flex-direction:column; width:100%; height:100%;">
+        <div id="custom-header">
+            <h1>ВТШ ТАЛДЫКОРГАН</h1>
+        </div>
+
+        <div id="layout">
+            <iframe id="frame" name="main-frame" src="https://pddtest.kz/"></iframe>
+        </div>
+    </div>
 </div>
 
 <div id="menu">
@@ -96,33 +142,31 @@
         const width = 500, height = 650;
         const left = (window.screen.width / 2) - (width / 2);
         const top = (window.screen.height / 2) - (height / 2);
-        const win = window.open('https://pddtest.kz/auth', 'authWindow', `width=${width},height=${height},top=${top},left=${left}`);
-        const timer = setInterval(() => { if (win && win.closed) { clearInterval(timer); refreshFrame(); } }, 1000);
+        window.open('https://pddtest.kz/auth', 'authWindow', `width=${width},height=${height},top=${top},left=${left}`);
     }
 
     function resetSystem() {
         const myAppUrl = window.location.href; 
         const logoutWin = window.open('https://pddtest.kz/logout', 'logoutWindow', 'width=1,height=1,left=0,top=0');
-        
         setTimeout(() => {
             if (logoutWin) logoutWin.close();
-            window.location.href = myAppUrl;
+            window.location.href = myAppUrl; 
         }, 1500);
-
         toggle(false);
     }
 
+    // Таймер на 30 минут
     let idleTimer = setTimeout(resetSystem, 1800000);
     function resetIdle() { clearTimeout(idleTimer); idleTimer = setTimeout(resetSystem, 1800000); }
-    ['touchstart', 'mousedown'].forEach(e => document.addEventListener(e, resetIdle));
+    ['touchstart', 'mousedown', 'mousemove', 'keypress', 'scroll'].forEach(e => document.addEventListener(e, resetIdle));
 
-    function refreshFrame() {
-        frame.src = "https://pddtest.kz/";
-        toggle(false);
-    }
+    function refreshFrame() { frame.src = "https://pddtest.kz/"; toggle(false); }
 
-    function toggle(open) { menu.style.transform = open ? 'translateY(0)' : 'translateY(calc(50vh - 70px))'; }
-    document.getElementById('handle').addEventListener('click', () => toggle(menu.style.transform !== 'translateY(0px)'));
+    function toggle(open) { menu.style.transform = open ? 'translateY(0)' : 'translateY(calc(60vh - 70px))'; }
+    document.getElementById('handle').addEventListener('click', () => {
+        const isClosed = menu.style.transform.includes('calc');
+        toggle(isClosed);
+    });
 
     function buildMenu(containerId) {
         const container = document.getElementById(containerId);
@@ -150,6 +194,7 @@
     buildMenu('sidebar-links');
     buildMenu('mobile-links');
 
+    // Логика слайда меню
     let startY = 0, currentY = 0;
     document.getElementById('handle').addEventListener('touchstart', (e) => {
         startY = e.touches[0].clientY;
@@ -159,14 +204,14 @@
 
     document.getElementById('handle').addEventListener('touchmove', (e) => {
         let newPos = currentY + (e.touches[0].clientY - startY);
-        menu.style.transform = `translateY(${Math.max(0, newPos)}px)`;
+        if (newPos >= 0) menu.style.transform = `translateY(${newPos}px)`;
         e.preventDefault();
     }, {passive: false});
 
     document.getElementById('handle').addEventListener('touchend', () => {
         menu.style.transition = 'transform 0.5s cubic-bezier(0.16, 1, 0.3, 1)';
         let pos = new WebKitCSSMatrix(window.getComputedStyle(menu).transform).m42;
-        toggle(pos < (window.innerHeight * 0.25));
+        toggle(pos < (window.innerHeight * 0.3));
     }, {passive: false});
 </script>
 </body>
