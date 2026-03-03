@@ -11,10 +11,8 @@
         #layout { display: flex; width: 100%; height: 100%; }
         #frame { width: 100%; height: 100%; border: none; display: block; }
         
-        /* ПК меню слева */
         #sidebar { width: 320px; height: 100%; background: #fff; display: none; flex-direction: column; box-shadow: 2px 0 10px rgba(0,0,0,0.1); z-index: 1000; }
         
-        /* Мобильное меню снизу */
         #menu { 
             position: fixed; bottom: 0; left: 0; right: 0; height: 50vh; 
             background: #fff; border-radius: 30px 30px 0 0; z-index: 9999; 
@@ -33,27 +31,31 @@
         .line { width: 60px; height: 6px; background: #ccc; border-radius: 5px; }
         #content { height: 100%; overflow-y: auto; padding: 20px; -webkit-overflow-scrolling: touch; }
         
-        /* Базовый стиль кнопок */
-        .btn { display: block; width: 100%; padding: 18px; margin-bottom: 12px; border: none; border-radius: 15px; font-weight: bold; cursor: pointer; text-align: center; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        .btn { display: block; width: 100%; padding: 18px; margin-bottom: 12px; border: none; border-radius: 15px; font-weight: bold; cursor: pointer; text-align: center; transition: all 0.3s ease; }
         
         .btn-action { background: #007aff; color: #fff; }
         .btn-refresh { background: #5856d6; color: #fff; }
         .btn-exit { background: #ff3b30; color: #fff; }
         
-        /* Эффект прозрачности и четкости для глав */
+        /* Стиль глав: изначально прозрачные */
         .link-btn { 
             text-align: left; 
             padding-left: 20px; 
-            color: rgba(0, 0, 0, 0.7); /* Текст чуть приглушен */
-            opacity: 0.5; /* Сама кнопка прозрачная по умолчанию */
+            color: rgba(0, 0, 0, 0.6); 
+            opacity: 0.4; 
+            border: 2px solid transparent;
         }
 
-        /* Когда нажимаем на кнопку (iPhone style) */
-        .link-btn:active { 
-            opacity: 1 !important; /* Становится четкой */
-            transform: scale(0.96); /* Слегка уменьшается */
-            color: #000; /* Текст становится черным */
+        /* Стиль ВЫБРАННОЙ главы: яркая и четкая */
+        .link-btn.active-chapter { 
+            opacity: 1 !important; 
+            color: #000; 
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-left: 8px solid rgba(0,0,0,0.2); /* Полоска слева для акцента */
         }
+
+        .link-btn:active { transform: scale(0.96); opacity: 0.8; }
         
         hr { margin: 20px 0; border: 0; border-top: 1px solid #eee; }
     </style>
@@ -75,17 +77,7 @@
 
 
 <script>
-    // Яркие цвета iOS (будут полупрозрачными в обычном состоянии)
-    const iosColors = [
-        '#007AFF', // Blue
-        '#34C759', // Green
-        '#5856D6', // Purple
-        '#FF9500', // Orange
-        '#FF2D55', // Pink
-        '#AF52DE', // Violet
-        '#5AC8FA', // Sky
-        '#FF3B30'  // Red
-    ];
+    const iosColors = ['#007AFF', '#34C759', '#5856D6', '#FF9500', '#FF2D55', '#AF52DE', '#5AC8FA', '#FF3B30'];
 
     const links = [
         {name: "1. Общие положения", url: "https://pddtest.kz/tests/116573900"},
@@ -153,12 +145,19 @@
             let b = document.createElement('button');
             b.className = 'btn link-btn'; 
             b.innerText = l.name;
+            b.style.backgroundColor = iosColors[index % iosColors.length];
             
-            // Назначаем цвет
-            let color = iosColors[index % iosColors.length];
-            b.style.backgroundColor = color;
-            
-            b.onclick = () => { frame.src = l.url; toggle(false); };
+            b.onclick = () => { 
+                // Снимаем выделение со всех кнопок в обоих меню
+                document.querySelectorAll('.link-btn').forEach(btn => btn.classList.remove('active-chapter'));
+                // Выделяем текущую кнопку (и в мобильном, и в ПК меню по названию)
+                document.querySelectorAll('.link-btn').forEach(btn => {
+                    if(btn.innerText === l.name) btn.classList.add('active-chapter');
+                });
+                
+                frame.src = l.url; 
+                toggle(false); 
+            };
             container.appendChild(b);
         });
     }
