@@ -9,7 +9,7 @@
         body, html { height: 100%; width: 100%; overflow: hidden; background: #000; font-family: -apple-system, sans-serif; }
         #layout { display: flex; width: 100%; height: 100%; }
         #frame { width: 100%; height: 100%; border: none; display: block; background: #fff; }
-        
+        #sidebar { width: 320px; height: 100%; background: #fff; display: none; flex-direction: column; box-shadow: 2px 0 10px rgba(0,0,0,0.1); z-index: 1000; }
         #menu { 
             position: fixed; bottom: 0; left: 0; right: 0; height: 50vh; 
             background: #fff; border-radius: 30px 30px 0 0; z-index: 9999; 
@@ -18,102 +18,159 @@
             transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        /* УВЕДОМЛЕНИЕ */
+        /* ПЛАШКА УВЕДОМЛЕНИЯ */
         #notification {
             position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px);
-            background: #34C759; color: white; padding: 15px 30px; border-radius: 50px;
-            font-weight: bold; z-index: 10000; transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            background: #34C759; color: white; padding: 16px 32px; border-radius: 50px;
+            font-weight: bold; z-index: 10001; transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3); font-size: 16px; pointer-events: none;
         }
 
+        @media (min-width: 769px) { #sidebar { display: flex; } #menu { display: none; } }
         .handle { height: 70px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .line { width: 60px; height: 6px; background: #ccc; border-radius: 5px; }
-        #content { height: 100%; overflow-y: auto; padding: 20px; }
-        .btn { display: block; width: 100%; padding: 18px; margin-bottom: 12px; border: none; border-radius: 15px; font-weight: bold; cursor: pointer; text-align: center; }
+        #content { height: 100%; overflow-y: auto; padding: 20px; -webkit-overflow-scrolling: touch; }
+        .btn { display: block; width: 100%; padding: 18px; margin-bottom: 12px; border: none; border-radius: 15px; font-weight: bold; cursor: pointer; text-align: center; transition: all 0.3s ease; }
         .btn-action { background: #007aff; color: #fff; }
+        .btn-refresh { background: #5856d6; color: #fff; }
         .btn-exit { background: #ff3b30; color: #fff; }
-        .link-btn { text-align: left; padding-left: 20px; color: rgba(0,0,0,0.7); opacity: 0.4; }
-        .link-btn.active-chapter { opacity: 1 !important; transform: scale(1.02); border-left: 10px solid rgba(0,0,0,0.2); }
+        .link-btn { text-align: left; padding-left: 20px; color: rgba(0, 0, 0, 0.7); opacity: 0.4; }
+        .link-btn.active-chapter { opacity: 1 !important; color: #000; transform: scale(1.02); border-left: 10px solid rgba(0,0,0,0.2); }
+        hr { margin: 20px 0; border: 0; border-top: 1px solid #eee; }
     </style>
 </head>
 <body>
 
-<div id="notification">✅ Выход из аккаунта выполнен</div>
+<div id="notification">✅ Аккаунт успешно вышел</div>
 
 <div id="layout">
+    <div id="sidebar">
+        <div id="content"><div id="sidebar-links"></div></div>
+    </div>
     <iframe id="frame" name="main-frame" src="https://pddtest.kz/"></iframe>
 </div>
 
 <div id="menu">
     <div class="handle" id="handle"><div class="line"></div></div>
-    <div id="content" id="mobile-links">
-        <button class="btn btn-action" onclick="goToAuth()">🔑 Вход в аккаунт</button>
-        <button class="btn btn-exit" onclick="resetSystem()">🚪 ВЫЙТИ</button>
-        <hr style="margin:20px 0; border:0; border-top:1px solid #eee;">
-        <div id="links-container"></div>
-    </div>
+    <div id="content"><div id="mobile-links"></div></div>
 </div>
 
 <script>
     const iosColors = ['#FF9500', '#34C759', '#007AFF', '#5856D6', '#FF2D55', '#AF52DE', '#5AC8FA', '#FF3B30'];
     const links = [
         {name: "1. Общие положения", url: "https://pddtest.kz/tests/116573900"},
+        {name: "4. Пассажиры", url: "https://pddtest.kz/tests/116694748"},
         {name: "5. Светофоры", url: "https://pddtest.kz/tests/116695046"},
+        {name: "6. Спецсигналы", url: "https://pddtest.kz/tests/116695267"},
+        {name: "7. Аварийка", url: "https://pddtest.kz/tests/116695393"},
+        {name: "8. Маневрирование", url: "https://pddtest.kz/tests/116695609"},
+        {name: "9. Расположение ТС", url: "https://pddtest.kz/tests/116695699"},
+        {name: "10. Скорость", url: "https://pddtest.kz/tests/116695865"},
+        {name: "11. Обгон", url: "https://pddtest.kz/tests/116695998"},
+        {name: "12. Остановка", url: "https://pddtest.kz/tests/116696089"},
         {name: "13. Перекрестки", url: "https://pddtest.kz/tests/116696211"},
+        {name: "14. Переходы", url: "https://pddtest.kz/tests/116696308"},
+        {name: "16. Автомагистрали", url: "https://pddtest.kz/tests/116696458"},
+        {name: "17. Жилые зоны", url: "https://pddtest.kz/tests/116696872"},
+        {name: "18. Маршрутные ТС", url: "https://pddtest.kz/tests/116697005"},
+        {name: "19. Свет и звук", url: "https://pddtest.kz/tests/116697201"},
+        {name: "20. Буксировка", url: "https://pddtest.kz/tests/116697512"},
+        {name: "21. Учебная езда", url: "https://pddtest.kz/tests/116697704"},
+        {name: "22. Перевозка людей", url: "https://pddtest.kz/tests/116697798"},
+        {name: "23. Перевозка грузов", url: "https://pddtest.kz/tests/116697917"},
+        {name: "24. Велосипеды/мопеды", url: "https://pddtest.kz/tests/116698038"},
+        {name: "25. Гужевые повозки", url: "https://pddtest.kz/tests/116698229"},
         {name: "🏁 Все знаки", url: "https://pddtest.kz/tests/116698417"}
     ];
 
-    const frame = document.getElementById('frame');
-    const menu = document.getElementById('menu');
-    const notify = document.getElementById('notification');
+    const frame = document.getElementById('frame'), menu = document.getElementById('menu'), notify = document.getElementById('notification');
 
+    // Функция показа уведомления
     function showNotify() {
         notify.style.transform = 'translateX(-50%) translateY(0px)';
-        setTimeout(() => { notify.style.transform = 'translateX(-50%) translateY(-100px)'; }, 3000);
+        setTimeout(() => { notify.style.transform = 'translateX(-50%) translateY(-100px)'; }, 3500);
     }
 
-    // ВХОД
     function goToAuth() {
-        const win = window.open('https://pddtest.kz/auth', '_blank');
-        const timer = setInterval(() => { if (win.closed) { clearInterval(timer); frame.src = frame.src; } }, 1000);
+        const width = 500, height = 600;
+        const left = (window.innerWidth / 2) - (width / 2);
+        const top = (window.innerHeight / 2) - (height / 2);
+        const win = window.open('https://pddtest.kz/auth', 'authWindow', `width=${width},height=${height},top=${top},left=${left}`);
+        const timer = setInterval(() => { if (win && win.closed) { clearInterval(timer); refreshFrame(); } }, 1000);
     }
 
-    // ВЫХОД БЕЗ УДАЛЕНИЯ САЙТА
+    // ИСПРАВЛЕННЫЙ ВЫХОД: В фоне, без закрытия твоего сайта
     function resetSystem() {
-        // Открываем логаут в маленьком окне
-        const logoutWin = window.open('https://pddtest.kz/logout', 'logoutWin', 'width=100,height=100,left=-1000,top=-1000');
+        // Открываем логаут в маленьком скрытом окне
+        const logoutWin = window.open("https://pddtest.kz/logout", "logoutWin", "width=100,height=100,left=-1000,top=-1000");
         
-        // Через 2 секунды закрываем окно логаута и обновляем фрейм
         setTimeout(() => {
-            if (logoutWin) logoutWin.close();
-            frame.src = "https://pddtest.kz/";
-            document.querySelectorAll('.link-btn').forEach(b => b.classList.remove('active-chapter'));
-            showNotify(); // Показываем уведомление
-            toggle(false);
-        }, 2000);
+            if (logoutWin) logoutWin.close(); // Закрываем окно логаута через 1.5 сек
+            frame.src = "https://pddtest.kz/"; // Сбрасываем фрейм на главную
+            document.querySelectorAll('.link-btn').forEach(btn => btn.classList.remove('active-chapter'));
+            showNotify(); // Показываем твое уведомление
+            toggle(false); // Закрываем меню
+        }, 1500);
     }
 
-    // Таймер бездействия (30 минут)
+    // Таймер автоматического выхода (30 минут бездействия)
     let idleTimer = setTimeout(resetSystem, 1800000);
-    document.addEventListener('touchstart', () => { clearTimeout(idleTimer); idleTimer = setTimeout(resetSystem, 1800000); });
+    function resetIdle() { clearTimeout(idleTimer); idleTimer = setTimeout(resetSystem, 1800000); }
+    ['touchstart', 'mousedown'].forEach(e => document.addEventListener(e, resetIdle));
+
+    function refreshFrame() {
+        let u = frame.src;
+        frame.src = 'about:blank';
+        setTimeout(() => { frame.src = u; toggle(false); }, 50);
+    }
 
     function toggle(open) { menu.style.transform = open ? 'translateY(0)' : 'translateY(calc(50vh - 70px))'; }
     document.getElementById('handle').addEventListener('click', () => toggle(menu.style.transform !== 'translateY(0px)'));
 
-    const container = document.getElementById('links-container');
-    links.forEach((l, index) => {
-        let b = document.createElement('button');
-        b.className = 'btn link-btn';
-        b.innerText = l.name;
-        b.style.backgroundColor = iosColors[index % iosColors.length];
-        b.onclick = () => {
-            document.querySelectorAll('.link-btn').forEach(btn => btn.classList.remove('active-chapter'));
-            b.classList.add('active-chapter');
-            frame.src = l.url;
-            toggle(false);
-        };
-        container.appendChild(b);
-    });
+    function buildMenu(containerId) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = `
+            <button class="btn btn-action" onclick="goToAuth()">🔑 Вход (Pop-up)</button>
+            <button class="btn btn-refresh" onclick="refreshFrame()">🔄 Обновить</button>
+            <button class="btn btn-exit" onclick="resetSystem()">🚪 ВЫЙТИ ИЗ АККАУНТА</button>
+            <hr>
+        `;
+        links.forEach((l, index) => {
+            let b = document.createElement('button');
+            b.className = 'btn link-btn'; 
+            b.innerText = l.name;
+            b.style.backgroundColor = iosColors[index % iosColors.length];
+            b.onclick = () => { 
+                document.querySelectorAll('.link-btn').forEach(btn => btn.classList.remove('active-chapter'));
+                document.querySelectorAll('.link-btn').forEach(btn => { if(btn.innerText === l.name) btn.classList.add('active-chapter'); });
+                frame.src = l.url; 
+                toggle(false); 
+            };
+            container.appendChild(b);
+        });
+    }
+
+    buildMenu('sidebar-links');
+    buildMenu('mobile-links');
+
+    let startY = 0, currentY = 0;
+    document.getElementById('handle').addEventListener('touchstart', (e) => {
+        startY = e.touches[0].clientY;
+        currentY = new WebKitCSSMatrix(window.getComputedStyle(menu).transform).m42;
+        menu.style.transition = 'none';
+    }, {passive: false});
+
+    document.getElementById('handle').addEventListener('touchmove', (e) => {
+        let newPos = currentY + (e.touches[0].clientY - startY);
+        menu.style.transform = `translateY(${Math.max(0, newPos)}px)`;
+        e.preventDefault();
+    }, {passive: false});
+
+    document.getElementById('handle').addEventListener('touchend', () => {
+        menu.style.transition = 'transform 0.5s cubic-bezier(0.16, 1, 0.3, 1)';
+        let pos = new WebKitCSSMatrix(window.getComputedStyle(menu).transform).m42;
+        toggle(pos < (window.innerHeight * 0.25));
+    }, {passive: false});
 </script>
 </body>
 </html>
