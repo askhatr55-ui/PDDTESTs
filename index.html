@@ -18,12 +18,17 @@
             transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        /* ПЛАШКА УВЕДОМЛЕНИЯ */
-        #notification {
-            position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px);
-            background: #34C759; color: white; padding: 16px 32px; border-radius: 50px;
-            font-weight: bold; z-index: 10001; transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.3); font-size: 16px; pointer-events: none;
+        /* Стиль для нового заголовка */
+        #custom-header {
+            text-align: center;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #eee;
+            color: #000;
+        }
+        #custom-header h1 {
+            font-size: 18px;
+            font-weight: bold;
         }
 
         @media (min-width: 769px) { #sidebar { display: flex; } #menu { display: none; } }
@@ -41,7 +46,9 @@
 </head>
 <body>
 
-<div id="notification">✅ Аккаунт успешно вышел</div>
+<div id="custom-header">
+    <h1>ВТШ ТАЛДЫКОРГАН</h1>
+</div>
 
 <div id="layout">
     <div id="sidebar">
@@ -83,48 +90,35 @@
         {name: "🏁 Все знаки", url: "https://pddtest.kz/tests/116698417"}
     ];
 
-    const frame = document.getElementById('frame'), menu = document.getElementById('menu'), notify = document.getElementById('notification');
-
-    function showNotify() {
-        notify.style.transform = 'translateX(-50%) translateY(0px)';
-        setTimeout(() => { notify.style.transform = 'translateX(-50%) translateY(-100px)'; }, 3500);
-    }
+    const frame = document.getElementById('frame'), menu = document.getElementById('menu');
 
     function goToAuth() {
-        const width = 500, height = 600;
-        const left = (window.innerWidth / 2) - (width / 2);
-        const top = (window.innerHeight / 2) - (height / 2);
+        const width = 500, height = 650;
+        const left = (window.screen.width / 2) - (width / 2);
+        const top = (window.screen.height / 2) - (height / 2);
         const win = window.open('https://pddtest.kz/auth', 'authWindow', `width=${width},height=${height},top=${top},left=${left}`);
         const timer = setInterval(() => { if (win && win.closed) { clearInterval(timer); refreshFrame(); } }, 1000);
     }
 
-    // ТЕПЕРЬ ОСТАЕТСЯ НА САЙТЕ И ВЫХОДИТ 100%
     function resetSystem() {
-        // Создаем временный невидимый iframe для команды выхода
-        const logoutHelper = document.createElement('iframe');
-        logoutHelper.style.display = 'none';
-        logoutHelper.src = "https://pddtest.kz/logout";
-        document.body.appendChild(logoutHelper);
-
-        // Ждем загрузки выхода в скрытом фрейме
+        const myAppUrl = window.location.href; 
+        const logoutWin = window.open('https://pddtest.kz/logout', 'logoutWindow', 'width=1,height=1,left=0,top=0');
+        
         setTimeout(() => {
-            document.body.removeChild(logoutHelper); // Удаляем помощника
-            frame.src = "https://pddtest.kz/"; // Обновляем основной фрейм на главную
-            document.querySelectorAll('.link-btn').forEach(btn => btn.classList.remove('active-chapter'));
-            showNotify(); // Показываем уведомление
-            toggle(false); // Закрываем меню
-        }, 2000); 
+            if (logoutWin) logoutWin.close();
+            window.location.href = myAppUrl;
+        }, 1500);
+
+        toggle(false);
     }
 
-    // Таймер 30 мин
     let idleTimer = setTimeout(resetSystem, 1800000);
     function resetIdle() { clearTimeout(idleTimer); idleTimer = setTimeout(resetSystem, 1800000); }
     ['touchstart', 'mousedown'].forEach(e => document.addEventListener(e, resetIdle));
 
     function refreshFrame() {
-        let u = frame.src;
-        frame.src = 'about:blank';
-        setTimeout(() => { frame.src = u; toggle(false); }, 50);
+        frame.src = "https://pddtest.kz/";
+        toggle(false);
     }
 
     function toggle(open) { menu.style.transform = open ? 'translateY(0)' : 'translateY(calc(50vh - 70px))'; }
@@ -145,7 +139,7 @@
             b.style.backgroundColor = iosColors[index % iosColors.length];
             b.onclick = () => { 
                 document.querySelectorAll('.link-btn').forEach(btn => btn.classList.remove('active-chapter'));
-                document.querySelectorAll('.link-btn').forEach(btn => { if(btn.innerText === l.name) btn.classList.add('active-chapter'); });
+                b.classList.add('active-chapter');
                 frame.src = l.url; 
                 toggle(false); 
             };
